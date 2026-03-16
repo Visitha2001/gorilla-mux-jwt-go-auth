@@ -26,3 +26,15 @@ type RegisterRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 }
+
+type Task struct {
+	ID          string         `gorm:"primaryKey" json:"id"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Status      string         `json:"status"`
+	StartDate   time.Time      `json:"start_date"`
+	EndDate     time.Time      `json:"end_date"`
+}

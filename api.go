@@ -16,6 +16,12 @@ func setRoutes(router *mux.Router) {
 	protected := api.PathPrefix("/").Subrouter()
 	protected.Use(authMiddleware)
 	protected.HandleFunc("/me", me).Methods("GET")
+
+	protected.HandleFunc("/tasks", getTasks).Methods("GET")
+	protected.HandleFunc("/tasks", createTask).Methods("POST")
+	protected.HandleFunc("/tasks", getTask).Methods("GET")
+	protected.HandleFunc("/tasks", editTask).Methods("PUT")
+	protected.HandleFunc("/tasks", deleteTask).Methods("DELETE")
 }
 
 func me(w http.ResponseWriter, r *http.Request) {
