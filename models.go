@@ -37,4 +37,6 @@ type Task struct {
 	Status      string         `json:"status"`
 	StartDate   time.Time      `json:"start_date"`
 	EndDate     time.Time      `json:"end_date"`
+	UserId      string         `json:"user_id"`
+	User        User           `json:"user"`
 }
