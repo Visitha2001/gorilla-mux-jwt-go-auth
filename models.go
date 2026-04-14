@@ -40,3 +40,17 @@ type Task struct {
 	UserId      string         `json:"user_id"`
 	User        User           `json:"user"`
 }
+
+type SubTasks struct {
+	ID          string         `gorm:"primaryKey" json:"id"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Status      string         `json:"status"`
+	StartDate   time.Time      `json:"start_date"`
+	EndDate     time.Time      `json:"end_date"`
+	TaskId      string         `json:"task_id"`
+	Task        Task           `json:"task"`
+}
