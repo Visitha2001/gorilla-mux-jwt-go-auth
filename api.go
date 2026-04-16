@@ -22,6 +22,12 @@ func setRoutes(router *mux.Router) {
 	protected.HandleFunc("/tasks/{id}", getTask).Methods("GET")
 	protected.HandleFunc("/tasks/{id}", editTask).Methods("PUT")
 	protected.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
+
+	// Subtasks routes
+	protected.HandleFunc("/tasks/{task_id}/subtasks", getSubTasks).Methods("GET")
+	protected.HandleFunc("/tasks/{task_id}/subtasks", createSubTask).Methods("POST")
+	protected.HandleFunc("/tasks/{task_id}/subtasks/{id}", editSubTask).Methods("PUT")
+	protected.HandleFunc("/tasks/{task_id}/subtasks/{id}", deleteSubTask).Methods("DELETE")
 }
 
 func me(w http.ResponseWriter, r *http.Request) {

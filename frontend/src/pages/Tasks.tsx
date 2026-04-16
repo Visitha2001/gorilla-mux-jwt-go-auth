@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import http from "../services/httpService";
-import type { Task } from "../Types";
-import { Trash2, Edit3, Plus, Loader2, Calendar, Clock, X } from "lucide-react";
+import type { Task, SubTask } from "../Types";
+import { Trash2, Edit3, Plus, Loader2, Calendar, Clock, X, CheckCircle, Circle } from "lucide-react";
 import TaskForm from "../components/TaskForm";
 
 export default function Tasks() {
@@ -12,6 +12,8 @@ export default function Tasks() {
   
   // NEW: State for viewing details
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const [subTasks, setSubTasks] = useState<SubTask[]>([]);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -21,6 +23,67 @@ export default function Tasks() {
   };
 
   useEffect(() => { fetchTasks(); }, []);
+
+  useEffect(() => {
+    if (viewingTask) {
+      fetchSubTasks(viewingTask.id!);
+    } else {
+      setSubTasks([]);
+      setNewSubTaskTitle("");
+    }
+  }, [viewingTask]);
+
+  const fetchSubTasks = async (taskId: string) => {
+    try {
+      const { data } = await http.get(`/tasks/${taskId}/subtasks`);
+      setSubTasks(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddSubTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubTaskTitle.trim() || !viewingTask) return;
+    try {
+      const payload: Partial<SubTask> = {
+        title: newSubTaskTitle,
+        description: "",
+        status: "pending",
+        start_date: new Date().toISOString(),
+        end_date: new Date().toISOString(),
+      };
+      await http.post(`/tasks/${viewingTask.id}/subtasks`, payload);
+      setNewSubTaskTitle("");
+      fetchSubTasks(viewingTask.id!);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSubTask = async (subTaskId: string) => {
+    if (!viewingTask) return;
+    try {
+      await http.delete(`/tasks/${viewingTask.id}/subtasks/${subTaskId}`);
+      fetchSubTasks(viewingTask.id!);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleSubTaskStatus = async (subTask: SubTask) => {
+    if (!viewingTask) return;
+    try {
+      const newStatus = subTask.status === 'completed' ? 'pending' : 'completed';
+      await http.put(`/tasks/${viewingTask.id}/subtasks/${subTask.id}`, {
+        ...subTask,
+        status: newStatus
+      });
+      fetchSubTasks(viewingTask.id!);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleEditClick = (task: Task, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the detail modal
@@ -91,6 +154,47 @@ export default function Tasks() {
               <div className="flex items-center gap-2">
                 <Clock size={16} className="text-red-400" />
                 <span>Ends: {new Date(viewingTask.end_date).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            {/* --- SUBTASKS SECTION --- */}
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-semibold text-gray-800 mb-3">Subtasks</h3>
+              
+              <form onSubmit={handleAddSubTask} className="flex gap-2 mb-4">
+                <input 
+                  type="text" 
+                  value={newSubTaskTitle}
+                  onChange={(e) => setNewSubTaskTitle(e.target.value)}
+                  placeholder="Add a new subtask..."
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button type="submit" disabled={!newSubTaskTitle.trim()} className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition">
+                  <Plus size={18} />
+                </button>
+              </form>
+
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                {subTasks.map(sub => (
+                  <div key={sub.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 hover:border-blue-100 transition group">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleToggleSubTaskStatus(sub)}>
+                      {sub.status === 'completed' ? (
+                        <CheckCircle size={18} className="text-green-500" />
+                      ) : (
+                        <Circle size={18} className="text-gray-300 group-hover:text-blue-400" />
+                      )}
+                      <span className={`text-sm ${sub.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                        {sub.title}
+                      </span>
+                    </div>
+                    <button onClick={() => handleDeleteSubTask(sub.id!)} className="text-gray-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                {subTasks.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-2">No subtasks yet.</p>
+                )}
               </div>
             </div>
 
