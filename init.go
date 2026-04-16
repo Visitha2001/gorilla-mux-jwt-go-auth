@@ -90,7 +90,7 @@ func dbInit() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	err = db.AutoMigrate(&User{}, &Task{})
+	err = db.AutoMigrate(&User{}, &Task{}, &SubTasks{})
 	if err != nil {
 		log.Fatalln("Error migrating database.")
 	}
